@@ -1,0 +1,107 @@
+==============================================================================
+GraphicsEncDecLib -- pure-managed C# image codecs: encode and decode
+SPDX-License-Identifier: MIT OR GPL-2.0-or-later
+
+This LICENSE file applies to every file in this folder and all of its
+subfolders -- the library sources under src\, the build scripts, and any
+harness, tools or documents that accompany them.
+
+It applies to THIS folder only, and not to whatever tree the folder sits in.
+Where the surrounding project carries a different licence, this folder is a
+deliberate exception: its code is written to be shared, so it is offered
+under both arms and a recipient may take either.
+==============================================================================
+
+Copyright (c) 2026 B. C. Services
+
+This software is dual-licensed.  You, the recipient, may use, copy,
+modify, distribute, and relicense the included sources under EITHER
+of the following licenses, at your discretion:
+
+    *  The MIT License (full text below)
+    *  The GNU General Public License, version 2.0, OR (at your option)
+       any later version (see GPL-2.0.txt in this folder)
+
+You choose.  Closed-source derivatives are fine under the MIT option.
+Free-software derivatives may take the GPL option.  The original code
+itself remains the property of its copyright holder, who retains the
+right to redistribute the original sources under either or both
+licenses to anyone they choose -- your choice of which license you
+apply to your fork does not constrain that.
+
+If, when redistributing this code or a derivative work, you choose to
+strip one of the two licenses from your distribution, you MUST keep
+the other intact.  You MAY NOT remove both.  When in doubt, ship both.
+
+------------------------------------------------------------------------------
+Third-party sources this library is transcoded from
+------------------------------------------------------------------------------
+
+Several files in src\ are hand transcodings of public C reference
+implementations into C#.  Each such file names its source project, file,
+version and commit in a lineage comment at the top.  Every one of those
+sources is permissive or public domain, which is what allows this library to
+offer the MIT arm above:
+
+    stb_image.h, stb_image_write.h, stb_image_resize2.h
+        nothings/stb -- dual licensed MIT OR public domain (Unlicense).
+        Copyright (c) 2017 Sean Barrett.
+
+    qoi.h
+        phoboslab/qoi -- MIT.  Copyright (c) 2021 Dominic Szablewski.
+
+    msf_gif.h
+        notnullnotvoid/msf_gif -- dual licensed MIT OR public domain.
+
+    gif.h
+        charlietangora/gif-h -- Unlicense (public domain).
+
+    lodepng.h, lodepng.cpp
+        lvandeve/lodepng -- zlib license.  Copyright (c) 2005-2026
+        Lode Vandevenne.
+
+No third-party code is redistributed here verbatim, and no third-party
+binary or package is bundled.  The transcodings are derivative works of the
+sources named above; their original license terms are satisfied by the
+attribution in each file's lineage comment and by this notice.
+
+------------------------------------------------------------------------------
+The MIT License
+------------------------------------------------------------------------------
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+------------------------------------------------------------------------------
+GNU General Public License v2.0 or later
+------------------------------------------------------------------------------
+
+The full text of the GNU General Public License version 2.0 is in the
+sibling file `GPL-2.0.txt` within this same directory.  That text was
+fetched verbatim from the canonical source published by the Free
+Software Foundation:
+
+    https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+
+The "or any later version" clause means: if you choose the GPL option,
+you may instead use the terms of any later version of the GPL published
+by the Free Software Foundation.
+
+------------------------------------------------------------------------------
+End of LICENSE
+------------------------------------------------------------------------------

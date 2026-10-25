@@ -1,0 +1,6 @@
+# Build outputs and backups - not committed.
+*.dll
+*.exe
+*.pdb
+*.bak
+*.V[0-9]*

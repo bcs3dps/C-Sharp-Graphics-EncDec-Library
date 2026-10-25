@@ -1,0 +1,4 @@
+# Store and check out every file byte-for-byte, on every platform.
+# The C# sources and docs are LF, the .bat build script is CRLF, and the
+# rendered API_Reference.html is CRLF; git must never rewrite line endings here.
+* -text

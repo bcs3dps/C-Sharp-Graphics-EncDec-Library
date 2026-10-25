@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GraphicsEncDecLib — API Reference</title>
+<style>
+
+body { font-family: Arial, sans-serif; font-size: 11pt; margin: 1in;
+       line-height: 1.4; max-width: 7.5in; color: #1a1a1a; }
+h1 { font-size: 18pt; color: #1a1a1a; border-bottom: 2px solid #333;
+     padding-bottom: 4pt; margin-top: 24pt; }
+h1:first-child { margin-top: 0; }
+h2 { font-size: 14pt; color: #1a1a1a; margin-top: 22pt;
+     border-bottom: 1px solid #999; padding-bottom: 2pt; }
+h3 { font-size: 12pt; color: #333; margin-top: 16pt; }
+h4 { font-size: 11pt; color: #333; margin-top: 12pt; margin-bottom: 4pt; }
+p  { margin: 6pt 0; }
+pre { background-color: #f0f0f0; border: 1px solid #ccc; padding: 8pt;
+      font-family: Consolas, monospace; font-size: 9.5pt; white-space: pre;
+      overflow-x: auto; line-height: 1.25; }
+code { font-family: Consolas, monospace; font-size: 10pt;
+       background-color: #f0f0f0; padding: 1pt 3pt; border-radius: 2px; }
+pre code { background-color: transparent; padding: 0; font-size: 9.5pt; }
+p.note, div.note { background-color: #fff3cd; border-left: 4px solid #ffc107;
+                   padding: 6pt 10pt; margin: 8pt 0; }
+p.important, div.important { background-color: #f8d7da;
+                             border-left: 4px solid #dc3545;
+                             padding: 6pt 10pt; margin: 8pt 0; }
+p.summary, div.summary { background-color: #d1ecf1;
+                         border-left: 4px solid #0c5460;
+                         padding: 6pt 10pt; margin: 8pt 0; }
+ul, ol { margin-top: 4pt; margin-bottom: 8pt; }
+li { margin-bottom: 4pt; }
+li > ul, li > ol { margin-top: 4pt; margin-bottom: 4pt; }
+/* Indented outline body. Use in markdown as:
+   <div class="indent" markdown="1"> ...markdown incl. code fences... </div>
+   (the md_in_html extension processes markdown inside the div). */
+div.indent { margin: 4pt 0 8pt 2em; }
+div.indent > :first-child { margin-top: 0; }
+div.indent > :last-child  { margin-bottom: 0; }
+table { border-collapse: collapse; margin: 10pt 0; width: 100%; }
+td, th { border: 1px solid #999; padding: 4pt 8pt; font-size: 10pt;
+         vertical-align: top; }
+th { background-color: #e0e0e0; text-align: left; }
+tr:nth-child(even) td { background-color: #f7f7f7; }
+a  { color: #1e3a8a; text-decoration: none; }
+a:hover { text-decoration: underline; }
+hr { border: none; border-top: 1px solid #999; margin: 16pt 0; }
+strong { color: #1a1a1a; }
+img { max-width: 100%; height: auto; }
+
+.doc-meta { color: #555; font-size: 10pt; margin-top: -6pt;
+            margin-bottom: 12pt; }
+.toc { background-color: #f7f7f7; border: 1px solid #ccc;
+       padding: 10pt 14pt; margin: 16pt 0 24pt; font-size: 10.5pt; }
+.toc h2 { font-size: 12pt; margin-top: 0; margin-bottom: 6pt; border: none;
+          color: #333; }
+.toc ul { margin: 0; padding-left: 20pt; }
+.toc li { margin-bottom: 2pt; }
+.toc a { color: #1e3a8a; }
+
+@media print {
+  body { margin: 0.75in; }
+  pre, table, div.note, div.important { page-break-inside: avoid; }
+  h1, h2, h3 { page-break-after: avoid; }
+}
+
+</style>
+</head>
+<body>
+<h1>GraphicsEncDecLib — API Reference</h1>
+<div class="toc">
+<h2>Contents</h2>
+<ul>
+  <li><a href="#1-what-it-does">1. What it does</a></li>
+  <li><a href="#2-requirements-and-portability">2. Requirements and portability</a></li>
+  <li><a href="#3-consuming-the-library">3. Consuming the library</a></li>
+  <li><a href="#4-conventions-you-need-before-reading-anything-else">4. Conventions you need before reading anything else</a></li>
+  <li><a href="#5-imagebuffer--the-pixel-type">5. <code>ImageBuffer</code> — the pixel type</a></li>
+  <li><a href="#6-imageframeset--animation">6. <code>ImageFrameSet</code> — animation</a></li>
+  <li><a href="#7-decoding">7. Decoding</a></li>
+  <li><a href="#8-encoding">8. Encoding</a></li>
+  <li><a href="#9-resampling">9. Resampling</a></li>
+  <li><a href="#10-core-primitives">10. Core primitives</a></li>
+  <li><a href="#11-accuracy-and-what-ldquolosslessrdquo-means-per-format">11. Accuracy and what &ldquo;lossless&rdquo; means per format</a></li>
+  <li><a href="#12-deviations-from-the-reference-sources">12. Deviations from the reference sources</a></li>
+  <li><a href="#13-public-for-testability">13. Public-for-testability</a></li>
+  <li><a href="#14-index-of-the-consumer-api">14. Index of the consumer API</a></li>
+  <li><a href="#15-worked-examples">15. Worked examples</a></li>
+</ul>
+</div>
+<p>A pure-managed C# image codec library. Five formats, both directions, plus a
+resampler. No GDI+, no <code>System.Drawing</code>, no P/Invoke, no NuGet, no native
+dependency of any kind.</p>
+<p><strong>Licence: MIT OR GPL-2.0-or-later, at the recipient&rsquo;s choice.</strong> See <code>LICENSE</code>
+in this folder for both texts and <code>GPL-2.0.txt</code> for the GPL in full. Copyright
+(c) 2026 B. C. Services.</p>
+<hr />
+<h2 id="1-what-it-does">1. What it does</h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Decode</th>
+<th>Encode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>PNG</strong></td>
+<td>every bit depth (1/2/4/8/16), every colour type (0/2/3/4/6), <code>tRNS</code> in both forms, Adam7 interlacing</td>
+<td>the same set, including palettised and interlaced output</td>
+</tr>
+<tr>
+<td><strong>JPEG</strong></td>
+<td>baseline and <strong>progressive</strong>; grayscale, 4:4:4, 4:2:2, 4:2:0; CMYK, YCCK and raw-RGB four-component corners</td>
+<td>baseline; grayscale, 4:4:4, 4:2:2, 4:2:0</td>
+</tr>
+<tr>
+<td><strong>BMP</strong></td>
+<td>header sizes 12/40/56/108/124; 1/4/8-bit palettised and 16/24/32-bit direct; <code>BI_RGB</code>, <code>BI_BITFIELDS</code>, <code>BI_RLE8</code>, <code>BI_RLE4</code>; both row orders</td>
+<td>4/8-bit palettised (optionally RLE), 24-bit <code>BI_RGB</code>, 32-bit <code>BI_BITFIELDS</code></td>
+</tr>
+<tr>
+<td><strong>QOI</strong></td>
+<td>full specification</td>
+<td>full specification, byte-identical to the reference encoder on all eight reference images</td>
+</tr>
+<tr>
+<td><strong>GIF</strong></td>
+<td>87a and 89a, LZW, interlacing, global and local tables, transparency, and <strong>animation</strong> with all four disposal methods</td>
+<td>stills and <strong>animation</strong>, with an exact palette when the image fits one and an adaptive quantiser when it does not</td>
+</tr>
+<tr>
+<td><strong>Resample</strong></td>
+<td>—</td>
+<td>five filters, both sample depths, all four channel counts, any ratio</td>
+</tr>
+</tbody>
+</table>
+<p>There is also a <strong>format-agnostic dispatcher</strong> that sniffs by magic bytes and
+decodes whatever it finds.</p>
+<div class="note">
+<p><strong>Out of scope, deliberately:</strong> TGA, PSD, HDR and PIC. Metadata (EXIF, ICC,
+text chunks) is skipped on read and not written. There is no streaming or
+incremental decode — every entry point takes and returns a <code>byte[]</code>.</p>
+</div>
+<hr />
+<h2 id="2-requirements-and-portability">2. Requirements and portability</h2>
+<ul>
+<li><strong>C# 5.0 / .NET Framework 4.x</strong>, buildable by <code>csc.exe</code> alone. No MSBuild, no
+  <code>.csproj</code>, no package manager.</li>
+<li><strong>The library references <code>System.dll</code> and nothing else.</strong> This is enforced by
+  the build rather than asserted: the library compiles as its own assembly with
+  only that reference, so a stray <code>System.Drawing</code> call is a compile error.</li>
+<li><strong>Runs under Mono on Linux.</strong> That is the reason the library exists. It is
+  built and its full test suite is run under Mono on every change.</li>
+<li><code>/unsafe</code> is enabled in the supplied build scripts so a <code>fixed</code> pointer in an
+  inner loop needs no build change. No current code uses one.</li>
+</ul>
+<hr />
+<h2 id="3-consuming-the-library">3. Consuming the library</h2>
+<p><strong>Copy the source in.</strong> This library is distributed as C# source, not as a
+binary, and the intended use is to mirror the files into your own tree and own
+that copy. Nothing needs to be installed and nothing is loaded at run time.</p>
+<p>What you need:</p>
+<pre><code>src\Core\Adler32.cs              src\Codecs\BmpCodec.cs
+src\Core\ByteReader.cs           src\Codecs\GifCodec.cs
+src\Core\ByteWriter.cs           src\Codecs\JpegCodec.cs
+src\Core\Crc32.cs                src\Codecs\PngCodec.cs
+src\Core\ImageBuffer.cs          src\Codecs\QoiCodec.cs
+src\Core\ImageDecoderDispatch.cs
+src\Core\ImageFrameSet.cs        src\Resample\ImageResampler.cs
+src\Core\ZlibStreamCodec.cs
+</code></pre>
+<p><strong>Fourteen files. They are self-contained</strong>: the only dependency any of them has
+is on the others and on <code>System.dll</code>. Each codec is one file carrying both
+directions, so a consumer needing only PNG can take <code>PngCodec.cs</code> plus <code>src\Core\</code>
+and drop the rest.</p>
+<p>Everything lives in namespace <strong><code>GraphicsEncDec</code></strong>.</p>
+<p><code>compile-lib.bat</code> (Windows, <code>csc.exe</code>) and <code>compile-lib.sh</code> (Linux, <code>mcs</code>) are
+supplied as worked examples. Each builds the library and nothing else, from the
+fourteen files above and no others. Neither globs: every source file is named
+explicitly, so a file added to the tree and not to the script is not compiled.</p>
+<hr />
+<h2 id="4-conventions-you-need-before-reading-anything-else">4. Conventions you need before reading anything else</h2>
+<h3>4.1 The failure contract</h3>
+<p><strong>Every fallible call returns <code>bool</code>, writes its result to an <code>out</code> parameter,
+and writes a human-readable explanation to <code>out string sReason</code>.</strong></p>
+<pre><code class="language-csharp">ImageBuffer img;
+string       sReason;
+
+if (!PngCodec.PNG_TryDecode(arrFile, 0, arrFile.Length, out img, out sReason))
+{
+    Console.Error.WriteLine(&quot;decode failed: &quot; + sReason);
+    return;
+}
+</code></pre>
+<ul>
+<li><strong>A malformed image is data, not an error condition.</strong> Corrupt input returns
+  <code>false</code> with a reason; it never throws.</li>
+<li><strong>Exceptions are reserved for caller bugs</strong> — a null buffer, an offset outside
+  the array. Those are your fault, not the file&rsquo;s.</li>
+<li><strong>On <code>false</code>, the <code>out</code> value is undefined.</strong> Do not read it.</li>
+<li><code>sReason</code> is always non-empty on failure and is meant to be shown or logged.
+  It names the specific field, offset or constraint that failed.</li>
+</ul>
+<h3>4.2 Naming</h3>
+<p>Every public symbol is globally unique — there is no overloading anywhere in
+the library, and no two methods share a name. A search for a symbol returns its
+definition and its real uses, nothing else.</p>
+<p>Names are <code>GROUP_PascalName</code>. The group prefixes are:</p>
+<table>
+<thead>
+<tr>
+<th>Prefix</th>
+<th>Owner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IMG_</code></td>
+<td><code>ImageBuffer</code></td>
+</tr>
+<tr>
+<td><code>FRM_</code></td>
+<td><code>ImageFrameSet</code></td>
+</tr>
+<tr>
+<td><code>IMGDEC_</code></td>
+<td>the format dispatcher</td>
+</tr>
+<tr>
+<td><code>PNG_</code>, <code>JPEG_</code>, <code>BMP_</code>, <code>QOI_</code>, <code>GIF_</code></td>
+<td>the five codecs</td>
+</tr>
+<tr>
+<td><code>RESAMP_</code></td>
+<td>the resampler</td>
+</tr>
+<tr>
+<td><code>CRC32_</code>, <code>ADLER_</code>, <code>ZLIB_</code></td>
+<td>the checksum and compression primitives</td>
+</tr>
+<tr>
+<td><code>BYTER_</code>, <code>BYTEW_</code></td>
+<td><code>ByteReader</code> and <code>ByteWriter</code></td>
+</tr>
+</tbody>
+</table>
+<p>Variables carry Hungarian type prefixes: <code>i</code> int, <code>b</code> bool, <code>s</code> string, <code>u</code>
+unsigned, <code>f</code> float, <code>arr</code> array, <code>img</code> an <code>ImageBuffer</code>, <code>opt</code> an options
+object.</p>
+<h3>4.3 Options objects and <code>null</code></h3>
+<p>Each encoder takes an options object. <strong>Passing <code>null</code> is legal and means &ldquo;use
+the defaults&rdquo;</strong>, which keeps the common call short without an overload:</p>
+<pre><code class="language-csharp">QoiCodec.QOI_TryEncode(img, null, out arrOut, out sReason);
+</code></pre>
+<p>To change one field, start from the factory rather than a bare constructor —
+some fields have no valid zero:</p>
+<pre><code class="language-csharp">GifEncodeOptions opt = GifCodec.GIF_DefaultEncodeOptions();
+opt.GIFOPT_iPaletteSize = 16;
+GifCodec.GIF_TryEncode(img, opt, out arrOut, out sReason);
+</code></pre>
+<div class="note">
+<p><strong>A default-constructed <code>GifEncodeOptions</code> is REFUSED.</strong> <code>GIFOPT_iPaletteSize</code>
+has no &ldquo;0 means default&rdquo; sentinel — its documented range is 2 to 256 — so a
+zeroed object is rejected rather than silently read as 256. Use the factory or
+pass <code>null</code>.</p>
+</div>
+<h3>4.4 The lossless / lossy line</h3>
+<p><strong>This is the single most important behavioural rule in the library, and it is
+the same in every codec.</strong></p>
+<ul>
+<li><strong>A conversion that loses nothing is performed for you, silently.</strong> Grayscale
+  widened to RGB, an opaque alpha channel appended, 8-bit widened to 16-bit.</li>
+<li><strong>A conversion that loses something is REFUSED, with a reason.</strong> Dropping an
+  alpha channel, narrowing 16-bit to 8-bit, reducing more colours than a palette
+  can hold, rounding a value that is not exactly representable.</li>
+</ul>
+<p>The caller who wants a lossy conversion asks for it explicitly — by converting
+the buffer first with <code>IMG_TryConvertChannels</code>, or by using an option that says
+so. The encoder never decides on your behalf.</p>
+<p>The one deliberate exception is GIF&rsquo;s quantiser, and it is only reachable
+because <code>GIFOPT_iPaletteSize</code> and <code>GIFOPT_bDither</code> exist for you to ask with.</p>
+<hr />
+<h2 id="5-imagebuffer--the-pixel-type">5. <code>ImageBuffer</code> — the pixel type</h2>
+<p>Every decode produces one; every encode and resize consumes one.</p>
+<pre><code class="language-csharp">public sealed class ImageBuffer
+{
+    public int      IMG_iWidth;           // pixels across, &gt;= 1
+    public int      IMG_iHeight;          // pixel rows, &gt;= 1
+    public int      IMG_iChannels;        // 1, 2, 3 or 4
+    public int      IMG_iBitsPerSample;   // 8 or 16
+    public byte[]   IMG_arrSamples8;      // live when 8-bit, else null
+    public ushort[] IMG_arrSamples16;     // live when 16-bit, else null
+}
+</code></pre>
+<p><strong>Samples are interleaved, row-major, top row first, no padding between rows.</strong>
+A pixel&rsquo;s channels are adjacent. There is no stride to account for: a row is
+exactly <code>IMG_iWidth * IMG_iChannels</code> samples.</p>
+<p><strong>Exactly one sample array is non-null.</strong> That is the type&rsquo;s central invariant.
+Check <code>IMG_iBitsPerSample</code> and use the matching array; never assume 8-bit.</p>
+<h3>5.1 Channel counts</h3>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Value</th>
+<th>Layout</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IMG_CHANNELS_GRAY</code></td>
+<td>1</td>
+<td>luminance</td>
+</tr>
+<tr>
+<td><code>IMG_CHANNELS_GRAY_ALPHA</code></td>
+<td>2</td>
+<td>luminance, alpha</td>
+</tr>
+<tr>
+<td><code>IMG_CHANNELS_RGB</code></td>
+<td>3</td>
+<td>red, green, blue</td>
+</tr>
+<tr>
+<td><code>IMG_CHANNELS_RGBA</code></td>
+<td>4</td>
+<td>red, green, blue, alpha</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Alpha is STRAIGHT, not premultiplied</strong>, everywhere in this library. A decoded
+image&rsquo;s colour channels are the real colour, whatever the alpha says.</p>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IMG_BITS_8</code></td>
+<td>8</td>
+</tr>
+<tr>
+<td><code>IMG_BITS_16</code></td>
+<td>16</td>
+</tr>
+<tr>
+<td><code>IMG_OPAQUE_8</code></td>
+<td>255</td>
+</tr>
+<tr>
+<td><code>IMG_OPAQUE_16</code></td>
+<td>65535</td>
+</tr>
+<tr>
+<td><code>IMG_MAX_DIMENSION</code></td>
+<td>16777216</td>
+</tr>
+</tbody>
+</table>
+<h3>5.2 Methods</h3>
+<pre><code class="language-csharp">bool   IMG_TryAllocate(int iWidth, int iHeight, int iChannels,
+                       int iBitsPerSample,
+                       out ImageBuffer imgOut, out string sReason);
+bool   IMG_TryValidate(ImageBuffer imgIn, out string sReason);
+int    IMG_SampleCount(ImageBuffer imgIn);
+int    IMG_RowStride(ImageBuffer imgIn);
+int    IMG_SampleIndex(ImageBuffer imgIn, int iX, int iY, int iChannel);
+bool   IMG_TryConvertChannels(ImageBuffer imgIn, int iNewChannels,
+                              out ImageBuffer imgOut, out string sReason);
+</code></pre>
+<p><strong><code>IMG_TryAllocate</code></strong> allocates a zero-filled buffer. It refuses a dimension
+below 1 or above <code>IMG_MAX_DIMENSION</code>, a channel count outside 1 to 4, a bit
+depth other than 8 or 16, and any geometry whose total sample count would
+overflow a 32-bit int. That overflow check is the reason to use it rather than
+building the object by hand.</p>
+<p><strong><code>IMG_TryValidate</code></strong> checks a buffer you built or modified yourself: the
+dimensions, the channel count, the depth, that exactly one sample array is live,
+and that its length matches the geometry exactly.</p>
+<p><strong><code>IMG_SampleCount</code></strong> is <code>width * height * channels</code>. <strong><code>IMG_RowStride</code></strong> is
+<code>width * channels</code> — both in SAMPLES, not bytes; at 16 bits a sample is two
+bytes.</p>
+<p><strong><code>IMG_SampleIndex</code></strong> computes the index of one channel of one pixel. It does no
+bounds checking, so it is safe to use in a loop you have already bounded.</p>
+<p><strong><code>IMG_TryConvertChannels</code></strong> is the lossy-conversion escape hatch. It performs
+all twelve conversions between the four channel counts, at either depth:</p>
+<table>
+<thead>
+<tr>
+<th>From → to</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gray → gray+alpha, RGB → RGBA</td>
+<td>appends an opaque alpha channel</td>
+</tr>
+<tr>
+<td>gray → RGB / RGBA</td>
+<td>replicates luminance into all three colour channels</td>
+</tr>
+<tr>
+<td>gray+alpha → RGBA</td>
+<td>replicates, alpha preserved</td>
+</tr>
+<tr>
+<td>RGB / RGBA → gray</td>
+<td>luminance-weighted, <code>(77 R + 150 G + 29 B) &gt;&gt; 8</code></td>
+</tr>
+<tr>
+<td>RGBA → RGB, gray+alpha → gray</td>
+<td><strong>drops the alpha channel</strong></td>
+</tr>
+</tbody>
+</table>
+<p>This is the one place in the library where information is discarded without
+complaint, because calling it is the caller saying so.</p>
+<hr />
+<h2 id="6-imageframeset--animation">6. <code>ImageFrameSet</code> — animation</h2>
+<pre><code class="language-csharp">public sealed class ImageFrameSet
+{
+    public ImageBuffer[] FRM_arrFrames;      // fully composited frames
+    public int[]         FRM_arrDelaysMs;    // delay BEFORE showing frame i
+    public int           FRM_iLoopCount;     // FRM_LOOP_FOREVER, or a play count
+}
+
+public const int FRM_LOOP_FOREVER = 0;
+public const int FRM_MAX_FRAMES   = 20000;
+
+bool FRM_TryValidate(ImageFrameSet frmIn, out string sReason);
+int  FRM_FrameCount(ImageFrameSet frmIn);
+</code></pre>
+<p><strong>Frames are fully composited, not deltas.</strong> Every frame is a complete image of
+the same size, with disposal already applied and transparency resolved. You can
+display <code>FRM_arrFrames[n]</code> directly without knowing anything about the frame
+before it. <strong>Every frame owns its own pixel array</strong> — they are not views onto a
+shared canvas.</p>
+<p><strong><code>FRM_arrDelaysMs[i]</code> is the delay before frame <code>i</code> is shown</strong>, in milliseconds.
+<code>FRM_arrFrames</code> and <code>FRM_arrDelaysMs</code> always have the same length.</p>
+<p><code>FRM_TryValidate</code> requires at least one frame, matching array lengths, every
+frame the same dimensions and channel count, and a frame count within
+<code>FRM_MAX_FRAMES</code>. That cap exists because a small file can declare an enormous
+canvas and repeat a tiny frame, so the memory cost is frames times canvas and
+nothing in the file&rsquo;s own size bounds it.</p>
+<hr />
+<h2 id="7-decoding">7. Decoding</h2>
+<h3>7.1 The five decoders</h3>
+<p>All five share one shape:</p>
+<pre><code class="language-csharp">bool PNG_TryDecode (byte[] arrData, int iOffset, int iLength,
+                    out ImageBuffer imgOut, out string sReason);
+bool JPEG_TryDecode(byte[] arrData, int iOffset, int iLength,
+                    out ImageBuffer imgOut, out string sReason);
+bool BMP_TryDecode (byte[] arrData, int iOffset, int iLength,
+                    out ImageBuffer imgOut, out string sReason);
+bool QOI_TryDecode (byte[] arrData, int iOffset, int iLength,
+                    out ImageBuffer imgOut, out string sReason);
+bool GIF_TryDecode (byte[] arrData, int iOffset, int iLength,
+                    out ImageBuffer imgOut, out string sReason);
+</code></pre>
+<p><code>iOffset</code> and <code>iLength</code> describe a <strong>window</strong> into <code>arrData</code>. The image need not
+start at index 0 and need not run to the end — which is the case that matters
+when a thumbnail is embedded inside a larger file.</p>
+<p><strong>The decoded buffer carries the FILE&rsquo;s channel count and depth, not a
+convenient one.</strong> A grayscale PNG decodes to one channel; a 16-bit PNG decodes to
+16-bit. Nothing is widened for you. If you want a specific shape, ask for it
+with <code>IMG_TryConvertChannels</code> afterwards — which keeps the conversion visible at
+your call site instead of hidden in five codecs.</p>
+<p><strong><code>GIF_TryDecode</code> returns frame 0</strong> of an animation, composited. For every frame,
+use <code>GIF_TryDecodeFrames</code>.</p>
+<h3>7.2 The cheap header readers</h3>
+<pre><code class="language-csharp">bool PNG_TryReadHeader (byte[] arrData, int iOffset, int iLength,
+                        out PngHeader hdrOut,  out string sReason);
+bool JPEG_TryReadHeader(byte[] arrData, int iOffset, int iLength,
+                        out JpegHeader hdrOut, out string sReason);
+</code></pre>
+<p>These read the header and stop. <strong>Use them when you are choosing an image by
+size before committing to decoding it</strong> — picking the right thumbnail out of a
+set, or rejecting something too large before allocating for it.</p>
+<p>They are not merely fast; they are also strict. A file whose Huffman or
+quantisation tables are corrupt is refused by <code>JPEG_TryReadHeader</code> even though
+it never decodes a pixel, because reporting a size for an image that cannot be
+decoded is worse than useless to a caller deciding whether to fetch it.</p>
+<p><code>PngHeader</code> carries width, height, bit depth, colour type, interlace method, and
+the derived <code>PNGH_iSamplesPerPixel</code>, <code>PNGH_bIsPalettised</code> and <code>PNGH_bHasAlpha</code>.</p>
+<p><code>JpegHeader</code> carries width, height, precision, component count, the progressive
+flag, per-component sampling factors, the derived MCU geometry, the restart
+interval, and the JFIF and Adobe-transform flags.</p>
+<p>BMP and QOI have no header-only reader; their full decode is cheap.</p>
+<h3>7.3 Animation</h3>
+<pre><code class="language-csharp">bool GIF_TryDecodeFrames(byte[] arrData, int iOffset, int iLength,
+                         out ImageFrameSet frmOut, out string sReason);
+</code></pre>
+<p>Returns every frame, composited, with delays and the loop count. Frame 0 equals
+what <code>GIF_TryDecode</code> returns for the same file.</p>
+<h3>7.4 The dispatcher</h3>
+<pre><code class="language-csharp">bool   IMGDEC_TrySniffFormat  (byte[] arrData, int iOffset, int iLength,
+                               out int iFormatOut, out string sReason);
+bool   IMGDEC_TryDecodeAny    (byte[] arrData, int iOffset, int iLength,
+                               out ImageBuffer imgOut, out string sReason);
+bool   IMGDEC_TryValidateWindow(byte[] arrData, int iOffset, int iLength,
+                               out string sReason);
+string IMGDEC_FormatName      (int iFormat);
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IMGDEC_FORMAT_UNKNOWN</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>IMGDEC_FORMAT_PNG</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>IMGDEC_FORMAT_JPEG</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>IMGDEC_FORMAT_BMP</code></td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>IMGDEC_FORMAT_QOI</code></td>
+<td>4</td>
+</tr>
+<tr>
+<td><code>IMGDEC_FORMAT_GIF</code></td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sniffing is by magic bytes only, never by file extension</strong> — an extension does
+not exist inside a base64 blob and is not trustworthy where it does exist.</p>
+<p><code>IMGDEC_TryDecodeAny</code> is what to call when you hold &ldquo;some image&rdquo; and do not care
+which format it is. All five formats both sniff and decode.</p>
+<hr />
+<h2 id="8-encoding">8. Encoding</h2>
+<p>All five encoders share one shape:</p>
+<pre><code class="language-csharp">bool PNG_TryEncode (ImageBuffer imgIn, PngEncodeOptions  optIn,
+                    out byte[] arrOut, out string sReason);
+bool JPEG_TryEncode(ImageBuffer imgIn, JpegEncodeOptions optIn,
+                    out byte[] arrOut, out string sReason);
+bool BMP_TryEncode (ImageBuffer imgIn, BmpEncodeOptions  optIn,
+                    out byte[] arrOut, out string sReason);
+bool QOI_TryEncode (ImageBuffer imgIn, QoiEncodeOptions  optIn,
+                    out byte[] arrOut, out string sReason);
+bool GIF_TryEncode (ImageBuffer imgIn, GifEncodeOptions  optIn,
+                    out byte[] arrOut, out string sReason);
+
+bool GIF_TryEncodeFrames(ImageFrameSet frmIn, GifEncodeOptions optIn,
+                         out byte[] arrOut, out string sReason);
+</code></pre>
+<p>And each has a factory:</p>
+<pre><code class="language-csharp">PngEncodeOptions  PNG_DefaultEncodeOptions();
+JpegEncodeOptions JPEG_DefaultEncodeOptions();
+BmpEncodeOptions  BMP_DefaultEncodeOptions();
+QoiEncodeOptions  QOI_DefaultEncodeOptions();
+GifEncodeOptions  GIF_DefaultEncodeOptions();
+</code></pre>
+<h3>8.1 PNG</h3>
+<pre><code class="language-csharp">public sealed class PngEncodeOptions
+{
+    public int  PNGOPT_iCompressionLevel;   // 0 none, 1 fastest, 6 default, 9 smallest
+    public bool PNGOPT_bInterlace;          // true writes Adam7
+    public int  PNGOPT_iBitDepth;           // 1..16; 0 matches the source buffer
+    public int  PNGOPT_iColorType;          // PNG_COLOR_*; 0 matches the source buffer
+}
+</code></pre>
+<p>Defaults: level <strong>6</strong>, no interlace, depth and colour type matched to the source.</p>
+<table>
+<thead>
+<tr>
+<th>Colour type</th>
+<th>Constant</th>
+<th>Depths accepted</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 grayscale</td>
+<td><code>PNG_COLOR_GRAY</code></td>
+<td>1, 2, 4, 8, 16</td>
+</tr>
+<tr>
+<td>2 truecolour</td>
+<td><code>PNG_COLOR_RGB</code></td>
+<td>8, 16</td>
+</tr>
+<tr>
+<td>3 palette</td>
+<td><code>PNG_COLOR_PALETTE</code></td>
+<td>1, 2, 4, 8</td>
+</tr>
+<tr>
+<td>4 gray+alpha</td>
+<td><code>PNG_COLOR_GRAY_ALPHA</code></td>
+<td>8, 16</td>
+</tr>
+<tr>
+<td>6 RGBA</td>
+<td><code>PNG_COLOR_RGBA</code></td>
+<td>8, 16</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The output shape follows the INPUT shape, never the pixel values.</strong> A
+four-channel buffer whose alpha happens to be 255 everywhere is still written as
+RGBA. That means you can predict the output without inspecting the pixels, and
+an encode-decode round trip returns the same channel count you started with. If
+you want the smaller file, convert the buffer down first.</p>
+<p><strong><code>PNGOPT_iColorType = 0</code> means &ldquo;match the source&rdquo;</strong>, which collides with
+<code>PNG_COLOR_GRAY = 0</code> only in appearance: the request it would otherwise express —
+grayscale from a buffer that is not already grayscale — is a lossy narrowing this
+encoder refuses anyway.</p>
+<p><strong>Palette output picks the narrowest index depth that fits</strong> when
+<code>PNGOPT_iBitDepth</code> is 0, because the palette is exact and a narrow index is
+exactly as lossless as a wide one. An explicit depth is honoured when it fits and
+refused when it is too narrow.</p>
+<p><strong>Sub-byte grayscale output requires every sample to be exactly representable</strong>
+at that depth. It is not rounded for you. In practice this is less strict than it
+sounds: an image decoded from a sub-byte PNG has samples that are multiples of
+the replication step by construction, so decode-then-re-encode is the identity.</p>
+<p><strong>More distinct colours than the palette can name is refused</strong>, not quantised.</p>
+<h3>8.2 JPEG</h3>
+<pre><code class="language-csharp">public sealed class JpegEncodeOptions
+{
+    public int JPEGOPT_iQuality;       // 1..100
+    public int JPEGOPT_iSubsampling;   // JPEG_SUBSAMPLE_444 / _422 / _420
+}
+</code></pre>
+<p>Defaults: quality <strong>90</strong>, <strong>4:4:4</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>JPEG_QUALITY_MIN</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>JPEG_QUALITY_MAX</code></td>
+<td>100</td>
+</tr>
+<tr>
+<td><code>JPEG_QUALITY_DEFAULT</code></td>
+<td>90</td>
+</tr>
+<tr>
+<td><code>JPEG_SUBSAMPLE_444</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>JPEG_SUBSAMPLE_422</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>JPEG_SUBSAMPLE_420</code></td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>Quality scales the Annex K quantisation tables. Output is always baseline
+(SOF0) — this library decodes progressive JPEG but does not write it.</p>
+<p><strong>A one- or three-channel buffer encodes. Two or four channels are REFUSED</strong>,
+naming the alpha: JPEG has no transparency and dropping it silently is exactly
+the narrowing described in §4.4. Convert with <code>IMG_TryConvertChannels</code> if that is
+what you want.</p>
+<p><strong>16-bit input is refused permanently</strong> — baseline JPEG is an 8-bit format.</p>
+<p><strong>Subsampling a grayscale image is refused</strong> rather than ignored; there is no
+chroma to reduce.</p>
+<p>Chroma is <strong>box-averaged</strong> on the way down, not point-sampled.</p>
+<h3>8.3 BMP</h3>
+<pre><code class="language-csharp">public sealed class BmpEncodeOptions
+{
+    public int  BMPOPT_iBitsPerPixel;   // 4, 8, 24 or 32
+    public bool BMPOPT_bRleCompress;    // true writes BI_RLE8 / BI_RLE4
+    public bool BMPOPT_bTopDown;        // true writes a negative-height DIB
+}
+</code></pre>
+<p>Defaults: <strong>24</strong>-bit, no RLE, bottom-up.</p>
+<ul>
+<li>24-bit writes <code>BI_RGB</code>; 32-bit writes <code>BI_BITFIELDS</code> with a <code>BITMAPV4HEADER</code>.</li>
+<li>4- and 8-bit write a palettised file, optionally RLE-compressed.
+  <code>BMPOPT_bRleCompress</code> requires 4 or 8 bits.</li>
+<li><strong>The palette is exact.</strong> More distinct colours than the depth can name is
+  refused, not quantised.</li>
+<li><strong>An RGBA source asked for 24-bit is refused</strong>, because that drops the alpha.</li>
+<li><strong>16-bit input is refused.</strong></li>
+<li>Top-down RLE is refused — the format itself forbids the combination.</li>
+</ul>
+<h3>8.4 QOI</h3>
+<pre><code class="language-csharp">public sealed class QoiEncodeOptions
+{
+    public int QOIOPT_iColorspace;   // QOI_SRGB_LINEAR_ALPHA (0) or QOI_LINEAR (1)
+}
+</code></pre>
+<p>Default: <code>QOI_SRGB_LINEAR_ALPHA</code>.</p>
+<p>QOI is lossless. The format itself stores only RGB or RGBA, so <strong>a grayscale
+buffer is WIDENED for you</strong> — 1 channel becomes RGB, 2 becomes RGBA — which is
+lossless and therefore silent, per §4.4. <strong>16-bit input is refused</strong>; QOI is an
+8-bit format.</p>
+<p>The colourspace byte is metadata: it is written to the header and returned on
+decode, and changes no pixel.</p>
+<h3>8.5 GIF</h3>
+<pre><code class="language-csharp">public sealed class GifEncodeOptions
+{
+    public int  GIFOPT_iPaletteSize;   // 2..256, rounded up to a power of two
+    public bool GIFOPT_bDither;        // Floyd-Steinberg, quantised path only
+    public int  GIFOPT_iLoopCount;     // 0..65535, or GIFOPT_LOOP_FROM_FRAMES
+    public int  GIFOPT_iTransparency;  // GIF_TRANSPARENCY_*
+}
+</code></pre>
+<p>Defaults: <strong>256</strong> entries, no dither, <code>GIFOPT_LOOP_FROM_FRAMES</code>, and
+<code>GIF_TRANSPARENCY_AUTO</code>.</p>
+<p><strong><code>GIFOPT_iPaletteSize</code> counts TABLE ENTRIES, not usable colours.</strong> A reserved
+transparent index comes out of that budget, so 16 entries with an index reserved
+gives fifteen colours. Entries is what the format&rsquo;s own size field expresses and
+what a caller managing file size cares about.</p>
+<p><strong>The exact palette is always tried first.</strong> An image whose colours fit the table
+is encoded losslessly, byte for byte, and <code>GIFOPT_bDither</code> has no effect on it —
+an exact palette approximates nothing, so there is no error to diffuse. Only when
+the image does not fit does the adaptive quantiser run.</p>
+<table>
+<thead>
+<tr>
+<th><code>GIFOPT_iTransparency</code></th>
+<th>Value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GIF_TRANSPARENCY_AUTO</code></td>
+<td>0</td>
+<td><strong>Default.</strong> Reserve an index only when the source needs one, or when animating and delta encoding would pay for it.</td>
+</tr>
+<tr>
+<td><code>GIF_TRANSPARENCY_NONE</code></td>
+<td>1</td>
+<td>Never declare one, so every entry is a colour. <strong>Refused</strong> when the source carries transparent pixels. Also disables delta encoding on an animation.</td>
+</tr>
+<tr>
+<td><code>GIF_TRANSPARENCY_RESERVE</code></td>
+<td>2</td>
+<td>Always reserve index 0, even for a fully opaque still.</td>
+</tr>
+</tbody>
+</table>
+<p><code>GIF_TRANSPARENCY_NONE</code> asked of an image that genuinely has holes is a refusal
+rather than an override, for the reason in §4.4.</p>
+<p><strong>Partial alpha is refused.</strong> GIF has exactly one bit of transparency, so an
+alpha of 128 cannot be written without deciding on your behalf whether that pixel
+vanishes or becomes solid. The reason string <strong>names the offending pixel&rsquo;s
+coordinates</strong>, so you do not have to search the image for the one bad sample.</p>
+<div class="note">
+<p><strong>The one exception to &ldquo;lossless with an exact palette&rdquo;:</strong> the colour beneath a
+fully transparent pixel is not preserved and comes back as zero. Such a pixel is
+never drawn, so its RGB carries no information — and a real RGBA source can hold
+hundreds of different colours under alpha 0, which would exhaust the palette on
+pixels nobody can see. <strong>The guarantee is exact in every VISIBLE sample:</strong> alpha
+everywhere, and colour wherever alpha is not zero.</p>
+</div>
+<h4>Animation</h4>
+<p><code>GIF_TryEncodeFrames</code> writes all frames with one shared global colour table.</p>
+<p><strong><code>GIFOPT_iLoopCount</code> is read literally for any value from 0 to 65535, including
+0, which means &ldquo;loop forever&rdquo;.</strong> The sentinel <code>GIFOPT_LOOP_FROM_FRAMES</code> (−1) is
+the default and takes the count from <code>ImageFrameSet.FRM_iLoopCount</code> instead —
+which is what makes a decode-then-re-encode round trip preserve the original
+count. Any other negative value is refused, as is anything above 65535.</p>
+<p><strong>Delays must be a multiple of 10 ms.</strong> GIF counts hundredths of a second, so
+105 ms cannot be written, and rounding it would mean silently returning a
+different animation from the one you handed in. The reason string names the
+multiple to use.</p>
+<p>Two encoding forms are chosen automatically. <strong>Delta</strong>: later frames are cropped
+to the changed rectangle and unchanged pixels marked transparent, with disposal 1.
+<strong>Full canvas</strong>: every frame covers the screen with disposal 2. The test is
+whether a transparent hole ever <em>opens</em> between consecutive frames — if one does,
+delta encoding cannot express it and the whole animation falls back to full
+canvas.</p>
+<hr />
+<h2 id="9-resampling">9. Resampling</h2>
+<pre><code class="language-csharp">bool RESAMP_TryResize(ImageBuffer imgIn, int iNewWidth, int iNewHeight,
+                      int iFilter, int iAlphaMode,
+                      out ImageBuffer imgOut, out string sReason);
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Filter</th>
+<th>Value</th>
+<th>Character</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RESAMP_FILTER_BOX</code></td>
+<td>1</td>
+<td>a trapezoid with one-pixel ramps; a true box at integer ratios</td>
+</tr>
+<tr>
+<td><code>RESAMP_FILTER_TRIANGLE</code></td>
+<td>2</td>
+<td>linear; bilinear when upsampling</td>
+</tr>
+<tr>
+<td><code>RESAMP_FILTER_CUBIC</code></td>
+<td>3</td>
+<td>the cubic B-spline; smooth and deliberately blurring</td>
+</tr>
+<tr>
+<td><code>RESAMP_FILTER_CATMULLROM</code></td>
+<td>4</td>
+<td>an interpolating cubic; sharp, and <strong>exact at scale 1</strong></td>
+</tr>
+<tr>
+<td><code>RESAMP_FILTER_MITCHELL</code></td>
+<td>5</td>
+<td>Mitchell-Netravali B=C=1/3; the usual compromise</td>
+</tr>
+</tbody>
+</table>
+<p><strong>There is no filter 0.</strong> An uninitialised filter has no correct meaning, so it is
+refused rather than quietly treated as box.</p>
+<p><strong>For a photographic downscale, Catmull-Rom or Mitchell. For an upscale,
+Triangle or Catmull-Rom. Box is for exact integer reductions.</strong></p>
+<p><code>TRIANGLE</code> and <code>CATMULLROM</code> reproduce the source exactly at scale 1; <code>CUBIC</code> and
+<code>MITCHELL</code> do not, and must not — they are blurring kernels by design.</p>
+<h3>9.1 Alpha mode</h3>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RESAMP_ALPHA_PREMULTIPLIED</code></td>
+<td>0 — <strong>the default</strong></td>
+</tr>
+<tr>
+<td><code>RESAMP_ALPHA_STRAIGHT</code></td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Premultiplied is the default and is the right answer for coverage alpha.</strong>
+Colour is multiplied by coverage on the way in and divided by it on the way out,
+so an invisible pixel contributes no colour to its visible neighbours.</p>
+<p>Take an opaque white pixel beside a fully transparent black one, averaged 50/50:</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>_STRAIGHT</code></td>
+<td><code>(128,128,128,128)</code> — <strong>grey</strong>, a 127-count halo</td>
+</tr>
+<tr>
+<td><code>_PREMULTIPLIED</code></td>
+<td><code>(255,255,255,128)</code> — <strong>still white</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Use <code>_STRAIGHT</code> only when alpha is a MASK rather than coverage</strong> — a selection
+channel over real data, where the RGB beneath alpha 0 is meaningful and
+premultiplying would destroy it.</p>
+<p>Zero being a legal value here, where it is refused for <code>iFilter</code>, is deliberate:
+an uninitialised alpha mode <em>does</em> have a correct meaning — the caller has not
+thought about alpha, and the behaviour that is right when you have not thought
+about it is premultiplied.</p>
+<p>The mode is accepted and has no effect on 1- and 3-channel images, so a caller
+resizing a mixed set need not vary the argument per image.</p>
+<div class="note">
+<p><strong>What premultiplying costs, so it is not rediscovered as a bug:</strong> colour
+channels become dependent on the alpha channel, so <strong>&ldquo;resizing RGBA equals
+resizing each channel alone&rdquo; holds in <code>_STRAIGHT</code> mode and NOT in
+<code>_PREMULTIPLIED</code>.</strong> What it does not cost is precision — the intermediate is
+float, so un-premultiplying recovers the original exactly rather than
+amplifying a quantisation error.</p>
+</div>
+<h3>9.2 Behaviour</h3>
+<ul>
+<li><strong>The result keeps the source&rsquo;s depth and channel count.</strong> Resizing is a
+  geometry operation; narrowing 16 bits to 8 on the way through would be a
+  second, invisible decision.</li>
+<li><strong>A sample is rounded exactly once</strong>, at the final write. The intermediate is
+  float, which is what prevents two-pass banding on a gradient.</li>
+<li><strong>Both passes handle edges by folding</strong> the out-of-range kernel weight back
+  onto the clamped edge pixel, so a border is not darkened.</li>
+<li>Every degenerate geometry works: one pixel in, one pixel out, a single row or
+  column, a row resized into a column, and extreme ratios in both directions.</li>
+</ul>
+<hr />
+<h2 id="10-core-primitives">10. Core primitives</h2>
+<p>These are public because they are genuinely reusable, and because the codecs
+needed them built correctly anyway.</p>
+<h3>10.1 Checksums</h3>
+<pre><code class="language-csharp">uint CRC32_Compute(byte[] arrData, int iOffset, int iLength);
+uint CRC32_Begin();
+uint CRC32_Update(uint uRunning, byte[] arrData, int iOffset, int iLength);
+uint CRC32_Finish(uint uRunning);
+
+uint ADLER_Compute(byte[] arrData, int iOffset, int iLength);
+uint ADLER_Begin();
+uint ADLER_Update(uint uRunning, byte[] arrData, int iOffset, int iLength);
+</code></pre>
+<p>CRC-32/ISO-HDLC, as PNG and zip use it: <code>CRC32_Compute("123456789")</code> is
+<code>0xCBF43926</code>. Adler-32 is RFC 1950&rsquo;s.</p>
+<p>The incremental trio exists because a PNG chunk&rsquo;s CRC covers the type bytes and
+the data bytes but <strong>not</strong> the length field, and those are two separate spans.
+<code>CRC32_Finish</code> applies the final inversion; do not skip it.</p>
+<h3>10.2 zlib</h3>
+<pre><code class="language-csharp">bool ZLIB_TryDeflate(byte[] arrData, int iOffset, int iLength, int iLevel,
+                     out byte[] arrOut, out string sReason);
+bool ZLIB_TryInflate(byte[] arrData, int iOffset, int iLength, int iMaxOutput,
+                     out byte[] arrOut, out string sReason);
+</code></pre>
+<p>RFC 1950 framing over the framework&rsquo;s <code>DeflateStream</code>. <code>iLevel</code> is 0 to 9.</p>
+<p><strong><code>iMaxOutput</code> is enforced DURING expansion, not after</strong> — that is what makes it
+a decompression-bomb guard rather than a post-hoc check. Pass the exact expected
+size when you know it, as the PNG decoder does; the inflate then doubles as a
+length check.</p>
+<p>The Adler-32 trailer <strong>is verified</strong>. <code>DeflateStream</code> alone will happily inflate
+a damaged payload without complaining.</p>
+<div class="note">
+<p><strong>Known platform difference:</strong> Mono 6.8 ignores
+<code>CompressionLevel.NoCompression</code> and deflates anyway. The output is still a
+valid zlib stream and still decodes; only the size differs. Do not rely on
+&ldquo;store&rdquo; actually storing.</p>
+</div>
+<h3>10.3 Byte readers and writers</h3>
+<pre><code class="language-csharp">ByteReader(byte[] arrData, int iOffset, int iLength);
+
+int  BYTER_Remaining();               int  BYTER_Position();
+bool BYTER_TrySeek(int iNewPos);      bool BYTER_TrySkip(int iCount);
+bool BYTER_TryPeekU8 (out int iValueOut);
+bool BYTER_TryReadU8 (out int iValueOut);
+bool BYTER_TryReadU16BE(out int iValueOut);
+bool BYTER_TryReadU16LE(out int iValueOut);
+bool BYTER_TryReadU32BE(out uint uValueOut);
+bool BYTER_TryReadU32LE(out uint uValueOut);
+bool BYTER_TryReadBytes(int iCount, out byte[] arrValueOut);
+bool BYTER_TryReadInto(byte[] arrDestIo, int iDestOffset, int iCount);
+</code></pre>
+<p><strong>A failed read leaves the cursor untouched</strong>, so a caller can report exactly
+where parsing stopped.</p>
+<pre><code class="language-csharp">ByteWriter(int iInitialCapacity);
+
+int    BYTEW_Length();    byte[] BYTEW_Buffer();    byte[] BYTEW_ToArray();
+void   BYTEW_WriteU8(int iValue);
+void   BYTEW_WriteU16BE(int iValue);   void BYTEW_WriteU16LE(int iValue);
+void   BYTEW_WriteU32BE(uint uValue);  void BYTEW_WriteU32LE(uint uValue);
+void   BYTEW_WriteBytes(byte[] arrSrc, int iOffset, int iLength);
+</code></pre>
+<p><strong><code>BYTEW_Buffer</code> exposes the live array</strong> — it is not a copy, and its length is
+the capacity, not the content length. Use <code>BYTEW_Length</code> for the latter and
+<code>BYTEW_ToArray</code> when you want an owned copy. The live accessor exists so a PNG
+encoder can checksum what it just wrote without copying the whole output per
+chunk.</p>
+<hr />
+<h2 id="11-accuracy-and-what-ldquolosslessrdquo-means-per-format">11. Accuracy and what &ldquo;lossless&rdquo; means per format</h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Guarantee</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>PNG</strong></td>
+<td>Lossless both ways.</td>
+</tr>
+<tr>
+<td><strong>QOI</strong></td>
+<td>Lossless both ways; the encoder reproduces the reference encoder byte for byte.</td>
+</tr>
+<tr>
+<td><strong>BMP</strong></td>
+<td>Lossless both ways.</td>
+</tr>
+<tr>
+<td><strong>GIF</strong></td>
+<td>Lossless <strong>when the image fits the palette</strong>, in every visible sample (see §8.5). Lossy when the quantiser runs — that is what you asked for.</td>
+</tr>
+<tr>
+<td><strong>JPEG</strong></td>
+<td>Lossy by construction, in both directions.</td>
+</tr>
+<tr>
+<td><strong>Resample</strong></td>
+<td>Lossy by construction; exact at scale 1 for the two interpolating filters.</td>
+</tr>
+</tbody>
+</table>
+<p>Every tolerance in this library&rsquo;s own test suite was <strong>measured</strong>, not chosen —
+each constant was set to zero and the reported worst case read back. For context,
+the decoder agrees with the platform decoder it was validated against to within
+1 sample count on grayscale JPEG, 3 on 4:4:4 colour, and 3 on 4:2:2 and 4:2:0
+photographs. Progressive JPEG decodes <strong>identically</strong> to its baseline twin, at
+tolerance zero.</p>
+<hr />
+<h2 id="12-deviations-from-the-reference-sources">12. Deviations from the reference sources</h2>
+<p>Each file names its own upstream in a lineage comment. Where this library
+deliberately departs from that upstream, the file header records it as a
+numbered DEVIATION. They are listed here because a reader diffing against the
+original will find them and should find them explained.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Deviation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>QoiCodec.cs</code></td>
+<td>Refuses a truncated file (the reference fills the remainder and returns success); verifies the 8-byte end marker (the reference ignores it); indexes a run&rsquo;s pixel on the encode side, which makes all eight reference images re-encode byte-identically.</td>
+</tr>
+<tr>
+<td><code>PngCodec.cs</code></td>
+<td>Refuses a palette index beyond the palette (the reference cannot — its palette is a fixed stack array, so an out-of-range index builds a pixel out of whatever was in memory). Treats the IHDR-derived size as an exact inflate cap rather than a backstop.</td>
+</tr>
+<tr>
+<td><code>JpegCodec.cs</code></td>
+<td><strong>Two</strong>, both matching libjpeg-turbo 3.1.4&rsquo;s <code>h2v1_fancy_upsample</code> against a defect in the transcription source: the last interpolated output of the horizontal chroma upsampler weights the <em>nearer</em> sample by three (the source swaps the operands, which turns a monotonic input into a non-monotonic output), and the interior rounding bias alternates +1 / +2 by output parity, which is libjpeg&rsquo;s ordered dither.</td>
+</tr>
+<tr>
+<td><code>GifCodec.cs</code></td>
+<td>Walks the LZW prefix chain with an explicit stack rather than recursion — a C# stack overflow cannot be caught, so a crafted file would otherwise be fatal. Stores palette entries RGBA rather than BGRA, which removes a background-fill colour swap present upstream. Implements &ldquo;restore to previous&rdquo; from the specification rather than the source&rsquo;s out-of-bounds frame arithmetic. Clears disposal 2 to <strong>transparent</strong> rather than to the background colour, because that is what real readers do. Fixes an alpha read in the quantiser&rsquo;s pixel swap.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="13-public-for-testability">13. Public-for-testability</h2>
+<p>Beyond the consumer API above, the library exposes a second, larger group of
+symbols: chunk and marker walkers, the block decoder, the IDCT, the five chroma
+resamplers, both halves of GIF&rsquo;s LZW, the quantiser&rsquo;s internals, and the
+resampler&rsquo;s kernel and coefficient machinery.</p>
+<p><strong>These are public so the test suite can drive them directly against
+independently computed expectations</strong> — the IDCT against the mathematical
+definition of the transform, the chroma filters against hand-worked arithmetic,
+the Huffman tables against a canonical reconstruction, the palette search against
+an exhaustive scan. None of that is reachable through the top-level entry points.
+The alternative, <code>InternalsVisibleTo</code>, would couple the library to the name of a
+test assembly, which is a worse trade for code whose whole point is to be lifted
+into another project.</p>
+<p><strong>They are not part of the stable surface.</strong> Treat everything in §5 through §10
+as the API; treat this group as implementation that happens to be reachable. It
+may change without notice.</p>
+<hr />
+<h2 id="14-index-of-the-consumer-api">14. Index of the consumer API</h2>
+<p><strong>Types:</strong> <code>ImageBuffer</code>, <code>ImageFrameSet</code>, <code>PngHeader</code>, <code>JpegHeader</code>,
+<code>JpegComponent</code>, <code>PngEncodeOptions</code>, <code>JpegEncodeOptions</code>, <code>BmpEncodeOptions</code>,
+<code>QoiEncodeOptions</code>, <code>GifEncodeOptions</code>, <code>ByteReader</code>, <code>ByteWriter</code>.</p>
+<p><strong>Static classes:</strong> <code>PngCodec</code>, <code>JpegCodec</code>, <code>BmpCodec</code>, <code>QoiCodec</code>, <code>GifCodec</code>,
+<code>ImageResampler</code>, <code>ImageDecoderDispatch</code>, <code>Crc32</code>, <code>Adler32</code>, <code>ZlibStreamCodec</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Call</th>
+<th>Section</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ADLER_Begin</code>, <code>ADLER_Compute</code>, <code>ADLER_Update</code></td>
+<td>10.1</td>
+</tr>
+<tr>
+<td><code>BMP_DefaultEncodeOptions</code>, <code>BMP_TryDecode</code>, <code>BMP_TryEncode</code></td>
+<td>7.1, 8.3</td>
+</tr>
+<tr>
+<td><code>BYTER_Position</code>, <code>BYTER_Remaining</code>, <code>BYTER_TryPeekU8</code>, <code>BYTER_TryReadBytes</code>, <code>BYTER_TryReadInto</code>, <code>BYTER_TryReadU8</code>, <code>BYTER_TryReadU16BE</code>, <code>BYTER_TryReadU16LE</code>, <code>BYTER_TryReadU32BE</code>, <code>BYTER_TryReadU32LE</code>, <code>BYTER_TrySeek</code>, <code>BYTER_TrySkip</code></td>
+<td>10.3</td>
+</tr>
+<tr>
+<td><code>BYTEW_Buffer</code>, <code>BYTEW_Length</code>, <code>BYTEW_ToArray</code>, <code>BYTEW_WriteBytes</code>, <code>BYTEW_WriteU8</code>, <code>BYTEW_WriteU16BE</code>, <code>BYTEW_WriteU16LE</code>, <code>BYTEW_WriteU32BE</code>, <code>BYTEW_WriteU32LE</code></td>
+<td>10.3</td>
+</tr>
+<tr>
+<td><code>CRC32_Begin</code>, <code>CRC32_Compute</code>, <code>CRC32_Finish</code>, <code>CRC32_Update</code></td>
+<td>10.1</td>
+</tr>
+<tr>
+<td><code>FRM_FrameCount</code>, <code>FRM_TryValidate</code></td>
+<td>6</td>
+</tr>
+<tr>
+<td><code>GIF_DefaultEncodeOptions</code>, <code>GIF_TryDecode</code>, <code>GIF_TryDecodeFrames</code>, <code>GIF_TryEncode</code>, <code>GIF_TryEncodeFrames</code></td>
+<td>7.1, 7.3, 8.5</td>
+</tr>
+<tr>
+<td><code>IMG_RowStride</code>, <code>IMG_SampleCount</code>, <code>IMG_SampleIndex</code>, <code>IMG_TryAllocate</code>, <code>IMG_TryConvertChannels</code>, <code>IMG_TryValidate</code></td>
+<td>5.2</td>
+</tr>
+<tr>
+<td><code>IMGDEC_FormatName</code>, <code>IMGDEC_TryDecodeAny</code>, <code>IMGDEC_TrySniffFormat</code>, <code>IMGDEC_TryValidateWindow</code></td>
+<td>7.4</td>
+</tr>
+<tr>
+<td><code>JPEG_DefaultEncodeOptions</code>, <code>JPEG_TryDecode</code>, <code>JPEG_TryEncode</code>, <code>JPEG_TryReadHeader</code></td>
+<td>7.1, 7.2, 8.2</td>
+</tr>
+<tr>
+<td><code>PNG_DefaultEncodeOptions</code>, <code>PNG_TryDecode</code>, <code>PNG_TryEncode</code>, <code>PNG_TryReadHeader</code></td>
+<td>7.1, 7.2, 8.1</td>
+</tr>
+<tr>
+<td><code>QOI_DefaultEncodeOptions</code>, <code>QOI_TryDecode</code>, <code>QOI_TryEncode</code></td>
+<td>7.1, 8.4</td>
+</tr>
+<tr>
+<td><code>RESAMP_FilterName</code>, <code>RESAMP_IsKnownFilter</code>, <code>RESAMP_TryResize</code></td>
+<td>9</td>
+</tr>
+<tr>
+<td><code>ZLIB_TryDeflate</code>, <code>ZLIB_TryInflate</code></td>
+<td>10.2</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="15-worked-examples">15. Worked examples</h2>
+<p><strong>Decode anything, resize it to a thumbnail, write a PNG:</strong></p>
+<pre><code class="language-csharp">ImageBuffer imgFull;
+ImageBuffer imgSmall;
+byte[]      arrPng;
+string      sReason;
+
+if (!ImageDecoderDispatch.IMGDEC_TryDecodeAny(arrInput, 0, arrInput.Length,
+                                              out imgFull, out sReason))
+{
+    return(false);
+}
+
+if (!ImageResampler.RESAMP_TryResize(imgFull, 128, 128,
+                                     ImageResampler.RESAMP_FILTER_CATMULLROM,
+                                     ImageResampler.RESAMP_ALPHA_PREMULTIPLIED,
+                                     out imgSmall, out sReason))
+{
+    return(false);
+}
+
+if (!PngCodec.PNG_TryEncode(imgSmall, null, out arrPng, out sReason))
+{
+    return(false);
+}
+</code></pre>
+<p><strong>Pick an image by size without decoding it:</strong></p>
+<pre><code class="language-csharp">PngHeader hdr;
+string    sReason;
+
+if (PngCodec.PNG_TryReadHeader(arrCandidate, 0, arrCandidate.Length,
+                               out hdr, out sReason))
+{
+    if (hdr.PNGH_iWidth &lt;= 512 &amp;&amp; hdr.PNGH_iHeight &lt;= 512)
+    {
+        /* small enough to be worth decoding */
+    }
+}
+</code></pre>
+<p><strong>Write a 16-colour dithered GIF:</strong></p>
+<pre><code class="language-csharp">GifEncodeOptions opt;
+byte[]           arrGif;
+string           sReason;
+
+opt = GifCodec.GIF_DefaultEncodeOptions();
+opt.GIFOPT_iPaletteSize = 16;
+opt.GIFOPT_bDither      = true;
+
+if (!GifCodec.GIF_TryEncode(img, opt, out arrGif, out sReason))
+{
+    return(false);
+}
+</code></pre>
+<p><strong>Encode a JPEG at 4:2:0, handling an RGBA source:</strong></p>
+<pre><code class="language-csharp">JpegEncodeOptions opt;
+ImageBuffer       imgRgb;
+byte[]            arrJpeg;
+string            sReason;
+
+/* JPEG has no alpha and will not drop it silently, so ask explicitly. */
+if (img.IMG_iChannels == ImageBuffer.IMG_CHANNELS_RGBA)
+{
+    if (!ImageBuffer.IMG_TryConvertChannels(img, ImageBuffer.IMG_CHANNELS_RGB,
+                                            out imgRgb, out sReason))
+    {
+        return(false);
+    }
+}
+else
+{
+    imgRgb = img;
+}
+
+opt = JpegCodec.JPEG_DefaultEncodeOptions();
+opt.JPEGOPT_iQuality     = 85;
+opt.JPEGOPT_iSubsampling = JpegCodec.JPEG_SUBSAMPLE_420;
+
+if (!JpegCodec.JPEG_TryEncode(imgRgb, opt, out arrJpeg, out sReason))
+{
+    return(false);
+}
+</code></pre>
+</body>
+</html>
